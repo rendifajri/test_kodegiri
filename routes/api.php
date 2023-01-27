@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\DocumentController;
+use App\Http\Controllers\API\LogicalController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post  ('login', [UserController::class, 'login']);
 Route::post  ('register', [UserController::class, 'register']);
+Route::get   ('logical', [LogicalController::class, 'index']);
 route::middleware(['auth:sanctum', 'verified'])->group(function(){
     Route::get   ('user/show', [UserController::class, 'show']);
     Route::post  ('user/update', [UserController::class, 'update']);

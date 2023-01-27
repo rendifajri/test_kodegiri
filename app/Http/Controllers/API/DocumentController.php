@@ -60,8 +60,9 @@ class DocumentController extends Controller
     {
         try{
             $valid_arr = [
-	            "date" => "required|date_format:Y-m-d|unique:App\Models\Document,date,{$id},id",
-                "type" => "required|in:IOH,Public",
+	            "title" => "required",
+	            "content" => "required",
+	            "signing" => "mimes:jpg,jpeg,png",
             ];
             $valid = Validator::make($request->all(), $valid_arr);
             if ($valid->fails()){
@@ -72,11 +73,21 @@ class DocumentController extends Controller
                 return $this->sendError('Invalid Validation', ["id" => ["Document not found"]], 400);
             }
             
+            $update = [
+	            "title" => $request->title,
+	            "content" => $request->content,
+            ];
+	        if ($request->hasFile("signing")){
+	            $signing = $request->file("signing");
+	        	if($signing->getSize() > 100000)
+                    return $this->sendError('Invalid Validation', ["signing" => ["Max file size 100 KB. Uploaded image size ".($signing->getSize() / 1000)." KB"]], 400);
+	        	$filename = date("YmdHis").".".$signing->extension();
+	            \Storage::putFileAs("public/images/document", $signing, $filename);
+	            $filename = "storage/images/document/".$filename;
+	        	$update["signing"] = $filename;
+	        }
             // dd($request->title);
-            $document->update([
-	            "date" => $request->date,
-	            "type" => $request->type,
-            ]);
+            $document->update($update);
             return $this->sendResponse($document, 'Document updated');
         } catch(Exception $error){
             Log::channel("daily")->info("Document.update() catch");
