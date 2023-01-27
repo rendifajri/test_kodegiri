@@ -2,11 +2,7 @@
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\API\UserController;
-use App\Http\Controllers\API\SessionController;
-use App\Http\Controllers\API\PurposeController;
-use App\Http\Controllers\API\OrganizationController;
-use App\Http\Controllers\API\DateNoteController;
-use App\Http\Controllers\API\BookingController;
+use App\Http\Controllers\API\DocumentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,8 +23,8 @@ route::middleware(['auth:sanctum', 'verified'])->group(function(){
     Route::post  ('user/update', [UserController::class, 'update']);
     Route::get   ('logout', [UserController::class, 'logout']);
     
-    Route::get   ('document', [DateNoteController::class, 'document']);
-    Route::post  ('document', [DateNoteController::class, 'create']);
-    Route::post  ('document/{id}', [DateNoteController::class, 'update']);
-    Route::delete('document/{id}', [DateNoteController::class, 'delete']);
+    Route::get   ('document', [DocumentController::class, 'index']);
+    Route::post  ('document', [DocumentController::class, 'create']);
+    Route::post  ('document/{id}', [DocumentController::class, 'update']);
+    Route::delete('document/{id}', [DocumentController::class, 'delete']);
 });

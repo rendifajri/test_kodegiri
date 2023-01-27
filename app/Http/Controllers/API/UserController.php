@@ -112,48 +112,48 @@ class UserController extends Controller
         }
 
     }
-    public function update(Request $request)
+    public function update(Request $request, User $user)
     {
         try{
-            $user = Auth::user($user);
+            $auth = Auth::user($user);
             $valid_arr = [
-                'email' => 'required|string|email|max:50|unique:users',
-                'password' => 'required|min:6',
+                'email' => 'required|string|email|max:50|unique:users,email,'.$auth['id'].',id',
                 'name' => 'required',
                 'phone' => 'required|min:9|regex:/(0)[0-9]{9}/',
                 'company' => 'required',
                 'division' => 'required',
-                'photo' => '"mimes:jpg,jpeg,png'
+                'photo' => 'mimes:jpg,jpeg,png'
             ];
             $valid = Validator::make($request->all(), $valid_arr);
             if ($valid->fails()){
                 return $this->sendError('Invalid Validation', $valid->errors(), 400);
             }
-            $user = User::find($user['id']);
-            if($user == null){
+            $userUpdate = User::find($auth['id']);
+            if($userUpdate == null){
                 return $this->sendError('Invalid Validation', ["id" => ["Profile not found"]], 400);
             }
             $update = [
 	            "email" => $request->email,
-	            "password" => $request->password,
 	            "name" => $request->name,
 	            "phone" => $request->phone,
 	            "company" => $request->company,
 	            "division" => $request->division,
             ];
-	        if ($request->hasFile("signing")){
-	            $signing = $request->file("signing");
-	        	if($signing->getSize() > 100000)
-                    return $this->sendError('Invalid Validation', ["signing" => ["Max file size 100 KB. Uploaded image size ".($signing->getSize() / 1000)." KB"]], 400);
-	        	$filename = date("YmdHis").".".$signing->extension();
-	            \Storage::putFileAs("public/images/document", $signing, $filename);
+            if($request->password != ""){
+                $update['password'] = hash::make($request->password);
+            }
+	        if ($request->hasFile("photo")){
+	            $photo = $request->file("photo");
+	        	if($photo->getSize() > 100000)
+                    return $this->sendError('Invalid Validation', ["photo" => ["Max file size 100 KB. Uploaded image size ".($photo->getSize() / 1000)." KB"]], 400);
+	        	$filename = date("YmdHis").".".$photo->extension();
+	            \Storage::putFileAs("public/images/document", $photo, $filename);
 	            $filename = "storage/images/document/".$filename;
-	        	$data["photo"] = $filename;
+	        	$update["photo"] = $filename;
 	        }
-            $user->update($update);
+            $userUpdate->update($update);
 
-            $data = $user;
-            return $this->sendResponse($data, 'Successfull Update');
+            return $this->sendResponse($user, 'Successfull Update');
         } catch(Exception $error){
             Log::channel("daily")->info("UserController.update() catch");
             Log::channel("daily")->info($error);
